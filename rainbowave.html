@@ -1,0 +1,120 @@
+<canvas id='V'>
+<script>
+C = V.getContext('2d');
+// AUDIO
+
+e = '';
+M = [e = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAwF0AAMBdAAABAAgAZGF0YQAA'];
+for (t = 0; t++ < 8e5;) {
+    e += btoa(String.fromCharCode('12132425363748498765'[(t >> 10 & 15) + (t >> 13 & 4)] * t & 96, Math.random() * 127 * (Math.pow(t / 144000 % 1, 16) / 4 + Math.pow(1 - t / 144000 % 1, 64)), t >> 10 & 7 ^ 5 || Math.random() * 127));
+}
+Z = new Audio(e);
+Z.play();
+
+// DRAWING
+
+//V.style.cssText = 'position:fixed;top:0;bottom:0;right:0;left:0;background:#000';
+V.style.position = 'fixed';
+V.style.top = 0;
+V.style.bottom = 0;
+V.style.right = 0;
+V.style.left = 0;
+V.style.background = '#000';
+
+V.width = W = innerWidth;
+V.height = H = innerHeight;
+
+ST = 1;
+objs = [];
+stars = [];
+yy = H/2;
+xx = W/2;
+an = 0;
+
+for (i = 0; i++ < 100;) {
+	ow = oh = 50 + i;
+	objs.push({
+		x : i * W*.01, // position x
+		y : yy + Math.sin(i*6)*100, // position y
+
+		w : ow, // width
+		h : oh, // height
+		r : 0, // rotation
+		c : i*10,//0 // color HUE
+		mw : 1, // multiplier for width
+		mh : 1, // multiplier for height
+		sin : 0
+		//cos : 0,
+		//mc : 1
+	});
+	stars.push({
+		x : Math.random()*W,
+		y : Math.random()*H,
+		w : Math.random()*4,
+		a : Math.random()// color alpha
+	});
+}
+
+function updt() {
+	for (i = 0; i++ < objs.length-1;) {
+		e = objs[i];
+
+		if (ST > 0) {
+			// size
+			if (e.w > 150 || e.w < 50) e.mw *= -1;
+			if (e.h > 150 || e.h < 50) e.mh *= -1;
+			e.w += e.mw;
+			e.h += e.mh;
+
+			// position x,y
+			e.sin += .02;
+			e.x = i * W*.01;
+			e.y = yy + Math.sin(i*6+e.sin)*100;
+		}
+		if (ST < 0) {
+			// position x,y
+			e.x = xx + Math.cos(an-=.5)*i*5;
+			e.y = yy + Math.sin(an-=.5)*i*8;
+		}
+
+		// rotation
+		e.r -= .01;
+
+		// color
+		e.c += 1;
+	}
+}
+
+function rndr() {
+
+	alp = ST > 0 ? .1 : .01
+	C.fillStyle = 'rgba(0,0,0,'+alp+')';
+	C.fillRect(0,0,W,H);
+	// C.clearRect(0,0,W,H);
+	// C.globalCompositeOperation = 'xor'; // source-over destination-over xor
+	for (i = 0; i++ < objs.length-1;) {
+		e = objs[i];
+		s = stars[i];
+		C.fillStyle = 'rgba(255,255,255,'+s.a+')';
+		C.fillRect(s.x, s.y, s.w, s.w);
+		C.fillStyle = 'hsl('+e.c+', 100%, 50%)';
+		if (ST > 0) {
+			C.save();
+			C.translate(e.x, e.y);
+			C.rotate(e.r);
+			C.fillRect(-e.w/2, -e.h/2, e.w, e.h);
+			C.restore();
+		}
+		if (ST < 0) {
+			C.fillRect(e.x-e.w/2, e.y-e.h/2, i/5, i/5);
+		}
+	}
+}
+
+(function run(t) {
+	updt();
+	rndr();
+	requestAnimationFrame(run);
+})()
+setInterval(function(){ST *= -1;C.clearRect(0,0,W,H)},10000)
+</script>
